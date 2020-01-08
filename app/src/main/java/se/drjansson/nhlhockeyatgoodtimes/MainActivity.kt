@@ -7,10 +7,8 @@ import android.widget.Button
 import android.widget.TextView
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.*
-import kotlinx.coroutines.NonCancellable.cancel
-import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
+import java.io.IOException
 
 @InternalCoroutinesApi
 class MainActivity : AppCompatActivity() {
@@ -25,45 +23,52 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val btn = findViewById<Button>(R.id.btnMain)
-        var txt = findViewById<TextView>(R.id.textView)
+        txt = findViewById(R.id.textView)
 
         btn.setOnClickListener {
-            GlobalScope.launch{
-                networkCallMain()
-            }
+            getJson()
         }
+
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        cancel()
+    private fun getJson(){
+       val request = Request.Builder().url(baseURL).build()
+
+       client.newCall(request).enqueue(object: Callback{
+          override fun onFailure(call: Call, e: IOException) {
+             Log.e("TAG", "Could not fetch JSON")
+          }
+
+          override fun onResponse(call: Call, response: Response) {
+             val result = response.body!!.string()
+             val gson = GsonBuilder().create()
+             val matches = gson.fromJson(result, Matches::class.java)
+             val date:String = matches.dates[0].date
+             val time:String = matches.dates[0].games[0].gameDate
+             val awayTeam:String = matches.dates[0].games[0].teams.away.team.name
+             val homeTeam:String = matches.dates[0].games[0].teams.home.team.name
+
+             val game = "$date $homeTeam-$awayTeam"
+
+             runOnUiThread {
+                txt!!.text = game
+             }
+          }
+
+       })
+
     }
 
-    private suspend fun networkCallMain() {
-        val result = networkCallHelper()
-        withContext(Dispatchers.Main) {
-            Log.i("LOG", result)
-
-            val gson = GsonBuilder().create()
-            val matches = gson.fromJson(result, Matches::class.java)
-
-            txt!!.text = result
-        }
-    }
-
-    private suspend fun networkCallHelper(): String {
-        return withContext(Dispatchers.Default) {
-            val request = Request.Builder()
-                .url(baseURL)
-                .build()
-
-            val response = client.newCall(request).execute()
-            return@withContext response.body!!.string()
-        }
-    }
 
     class Matches(val dates: List<Info>)
 
-    class Info(val date: String, val totalItems: Int)
+    class Info(val date: String, val games: List<Games>)
+
+    class Games(val gameDate: String, val teams: Teams)
+
+    class Teams(val away: Lag, val home: Lag )
+
+    class Lag(val team: Sista)
+    class Sista(val name: String)
 
 }
