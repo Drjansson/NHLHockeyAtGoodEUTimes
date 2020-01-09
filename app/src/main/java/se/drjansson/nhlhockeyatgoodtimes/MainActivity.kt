@@ -1,7 +1,6 @@
 package se.drjansson.nhlhockeyatgoodtimes
 
 import android.app.DatePickerDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -9,10 +8,15 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.GsonBuilder
+import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.*
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,34 +31,36 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        populateSpinner()
         initializeUI()
     }
 
+    private fun populateSpinner() {
+
+    }
+
     private fun initializeUI() {
-        val btn = findViewById<Button>(R.id.btnMain)
-        txt = findViewById(R.id.textView)
-        btn.setOnClickListener {
+        txt = findViewById(R.id.txtNextGame)
+        btnMain.setOnClickListener {
             getJson()
         }
 
-        dateFrom = findViewById(R.id.txtStartDate)
-        dateFrom?.inputType = InputType.TYPE_NULL
-        dateFrom?.setOnClickListener(dateClickListener)
-        dateTo = findViewById(R.id.txtEndDate)
-        dateTo?.inputType = InputType.TYPE_NULL
-        dateTo?.setOnClickListener(dateClickListener)
+        txtStartDate.inputType = InputType.TYPE_NULL
+        txtStartDate.setOnClickListener(dateClickListener)
+        txtEndDate.inputType = InputType.TYPE_NULL
+        txtEndDate?.setOnClickListener(dateClickListener)
 
-        val btnClear1 = findViewById<Button>(R.id.btnClearFrom)
-
-        btnClear1.setOnClickListener {
+        btnClearFrom.setOnClickListener {
             dateFrom?.setText("")
             startDate = ""
         }
-        val btnClear2 = findViewById<Button>(R.id.btnClearTo)
-        btnClear2.setOnClickListener {
+        btnClearTo.setOnClickListener {
             dateTo?.setText("")
             endDate = ""
         }
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        //recyclerView.adapter = MainAdapter()
 
     }
 
@@ -73,10 +79,10 @@ class MainActivity : AppCompatActivity() {
             if (origView?.id == R.id.txtStartDate) {
                 startDate = "$year-$monthstr$month-$day"
                 Log.e("TAG",startDate)
-                dateFrom?.setText("$day, $month, $year")
+                txtStartDate.setText("$day, $month, $year")
             } else if (origView?.id == R.id.txtEndDate) {
                 endDate = "$year-$monthstr$month-$day"
-                dateTo?.setText("$day, $month, $year")
+                txtEndDate.setText("$day, $month, $year")
             }
         },y , m, d)
 
@@ -107,9 +113,21 @@ class MainActivity : AppCompatActivity() {
 
                 val game = "$date $homeTeam-$awayTeam"
 
+                val format = SimpleDateFormat(
+                    "yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US
+                )
+                format.timeZone = TimeZone.getTimeZone("UTC")
+
+                val datum = format.parse(time)
+
+                Log.v("Time", "time: $time")
+                val cal = format.calendar
+                val tid = cal.time
+                Log.v("Time", "time2: $format")
 
 
                 runOnUiThread {
+                    recyclerView.adapter = MainAdapter(matches)
                     txt!!.text = game
                 }
             }
@@ -118,7 +136,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    class Matches(val dates: List<Info>)
+    class Matches(val totalGames: Int, val dates: List<Info>)
     class Info(val date: String, val games: List<Games>)
     class Games(val gameDate: String, val teams: Teams)
     class Teams(val away: Lag, val home: Lag )

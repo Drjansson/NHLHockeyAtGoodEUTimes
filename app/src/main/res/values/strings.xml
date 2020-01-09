@@ -4,4 +4,5 @@
     <string name="start_date_hint">From Date</string>
     <string name="btnMain">Fetch Data</string>
     <string name="btnClear">Clear</string>
+    <string name="txtNextGame">Next Game:</string>
 </resources>
