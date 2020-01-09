@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">NHLHockeyAtGoodTimes</string>
+    <string name="end_date_hint">To Date</string>
+    <string name="start_date_hint">From Date</string>
+    <string name="btnMain">Fetch Data</string>
+    <string name="btnClear">Clear</string>
 </resources>
