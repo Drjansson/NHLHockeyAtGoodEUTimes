@@ -78,7 +78,6 @@ class MainActivity : AppCompatActivity() {
             // Display Selected date in textbox
             if (origView?.id == R.id.txtStartDate) {
                 startDate = "$year-$monthstr$month-$day"
-                Log.e("TAG",startDate)
                 txtStartDate.setText("$day, $month, $year")
             } else if (origView?.id == R.id.txtEndDate) {
                 endDate = "$year-$monthstr$month-$day"
@@ -106,30 +105,47 @@ class MainActivity : AppCompatActivity() {
                 val result = response.body!!.string()
                 val gson = GsonBuilder().create()
                 val matches = gson.fromJson(result, Matches::class.java)
-                val date:String = matches.dates[0].date
-                val time:String = matches.dates[0].games[0].gameDate
-                val awayTeam:String = matches.dates[0].games[0].teams.away.team.name
-                val homeTeam:String = matches.dates[0].games[0].teams.home.team.name
-
-                val game = "$date $homeTeam-$awayTeam"
 
                 val format = SimpleDateFormat(
                     "yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US
                 )
-                format.timeZone = TimeZone.getTimeZone("UTC")
+                format.timeZone = TimeZone.getTimeZone("Sweden/Stockholm") //"UTC"
 
-                val datum = format.parse(time)
+                val date = matches.dates[0].date
+                val time = matches.dates[0].games[0].gameDate
+                val awayTeam = matches.dates[0].games[0].teams.away.team.name
+                val homeTeam = matches.dates[0].games[0].teams.home.team.name
 
-                Log.v("Time", "time: $time")
-                val cal = format.calendar
-                val tid = cal.time
-                Log.v("Time", "time2: $format")
+                val game = "$date $homeTeam-$awayTeam"
 
+
+
+                for(match in matches.dates){
+                    val time:String = match.games[0].gameDate
+                    format.parse(time)
+                    match.games[0].cal = format.calendar
+                    match.games[0].cal.timeZone = TimeZone.getTimeZone("Europe/Stockholm")
+
+
+                   /* Log.e("TAG", "år " +match.games[0].cal.get(Calendar.YEAR)  )
+                    Log.e("TAG", "Mån " +match.games[0].cal.get(Calendar.MONTH)  )
+                    Log.e("TAG", "Dag " +match.games[0].cal.get(Calendar.DAY_OF_MONTH)  )
+                    Log.e("TAG", "Tim " +match.games[0].cal.get(Calendar.HOUR_OF_DAY)  )
+                    Log.e("TAG", "Min " +match.games[0].cal.get(Calendar.MINUTE)  )*/
+                    val start = match.games[0].cal.get(Calendar.HOUR_OF_DAY)
+                    if(start in 11..22)
+                        match.games[0].before10 = true
+                }
+
+
+                //Log.v("Time", "time: $time")
 
                 runOnUiThread {
                     recyclerView.adapter = MainAdapter(matches)
                     txt!!.text = game
                 }
+
+
             }
 
         })
@@ -138,7 +154,7 @@ class MainActivity : AppCompatActivity() {
 
     class Matches(val totalGames: Int, val dates: List<Info>)
     class Info(val date: String, val games: List<Games>)
-    class Games(val gameDate: String, val teams: Teams)
+    class Games(val gameDate: String, val teams: Teams, var before10 : Boolean = false, var cal : Calendar)
     class Teams(val away: Lag, val home: Lag )
     class Lag(val team: Sista)
     class Sista(val name: String)

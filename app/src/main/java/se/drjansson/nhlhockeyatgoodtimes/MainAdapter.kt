@@ -1,6 +1,7 @@
 package se.drjansson.nhlhockeyatgoodtimes
 
 import android.graphics.Color
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,15 +17,20 @@ class MainAdapter( val matches: MainActivity.Matches) : RecyclerView.Adapter<Cus
     }
 
     override fun onBindViewHolder(holder: CustomViewHolder, position: Int) {
-        val awayTeam:String = matches.dates[position].games[0].teams.away.team.name
-        val homeTeam:String = matches.dates[position].games[0].teams.home.team.name
-        val date:String = matches.dates[position].date
-        val time:String = matches.dates[position].games[0].gameDate
+        val awayTeam = matches.dates[position].games[0].teams.away.team.name
+        val homeTeam = matches.dates[position].games[0].teams.home.team.name
+        val date = matches.dates[position].date
+        val time = matches.dates[position].games[0].gameDate
         holder.view.txtHomeTeam.text = homeTeam
         holder.view.txtAwayTeam.text = awayTeam
         holder.view.txtDate.setText(date)
         holder.view.txtTime.setText(time)
-        holder.view.setBackgroundColor(Color.GREEN)
+
+        if(matches.dates[position].games[0].before10)
+            holder.view.setBackgroundColor(Color.GREEN)
+
+        holder.view.txtDate.inputType = InputType.TYPE_NULL
+        holder.view.txtTime.inputType = InputType.TYPE_NULL
     }
     override fun getItemCount(): Int {
         return matches.totalGames

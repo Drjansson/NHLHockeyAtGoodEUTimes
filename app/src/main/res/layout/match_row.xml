@@ -12,7 +12,6 @@
         android:layout_marginStart="40dp"
         android:layout_marginLeft="40dp"
         android:layout_marginTop="28dp"
-        android:text="TextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -25,7 +24,6 @@
         android:layout_marginTop="28dp"
         android:layout_marginEnd="40dp"
         android:layout_marginRight="40dp"
-        android:text="TextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/txtHomeTeam"
@@ -39,7 +37,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginTop="20dp"
         android:ems="10"
-        android:inputType="date"
+        android:importantForAutofill="no"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtHomeTeam" />
 
@@ -51,7 +49,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginTop="20dp"
         android:ems="10"
-        android:inputType="time"
+        android:importantForAutofill="no"
         app:layout_constraintStart_toEndOf="@+id/txtDate"
         app:layout_constraintTop_toBottomOf="@+id/txtAwayTeam" />
 </androidx.constraintlayout.widget.ConstraintLayout>
