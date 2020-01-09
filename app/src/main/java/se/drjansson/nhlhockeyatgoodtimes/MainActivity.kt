@@ -108,6 +108,7 @@ class MainActivity : AppCompatActivity() {
                 val game = "$date $homeTeam-$awayTeam"
 
 
+
                 runOnUiThread {
                     txt!!.text = game
                 }
