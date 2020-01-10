@@ -1,6 +1,7 @@
 package se.drjansson.nhlhockeyatgoodtimes
 
 import android.app.DatePickerDialog
+import android.content.Context
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -22,6 +23,8 @@ import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
+    private val TEAM_LIST = "team_list"
+    private val TEAM_LIST_CACHE = "team_list_cache"
     private var client = OkHttpClient()
     private var txt : TextView? = null
     private var startDate: Date? = null
@@ -45,17 +48,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun populateSpinner() {
-        var list_of_items = arrayOf("Item 1", "Item 2", "Item 3")
+        val sharedPrefs = getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+        val savedString = sharedPrefs.getString(TEAM_LIST, null)
+        var resetCache = sharedPrefs.getInt(TEAM_LIST_CACHE, 10)
+
         spinTeamSelect.onItemSelectedListener = spinSelectedListener
 
-        // Create an ArrayAdapter using a simple spinner layout and languages array
-        aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, list_of_items)
-        // Set layout to use when the list of choices appear
-        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        // Set Adapter to Spinner
-        spinTeamSelect!!.adapter = aa
+        if(savedString != null && resetCache < 10) {
+            val list_of_items = savedString.split("\\|".toRegex())
+            setTeams(list_of_items as ArrayList<String>)
 
-        getTeams()
+            resetCache++
+            val editor = sharedPrefs.edit()
+            editor.putInt(TEAM_LIST_CACHE, resetCache)
+            editor.apply()
+        } else
+            getTeams()
+
     }
 
     private fun initializeUI() {
@@ -84,7 +93,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val dateClickListener = View.OnClickListener { origView ->
-        var y:Int; var m:Int; var d:Int
+        val y:Int; val m:Int; val d:Int
         if (origView?.id == R.id.txtStartDate && startDate != null) {
             y= startDate!!.year
             m= startDate!!.month-1
@@ -120,19 +129,14 @@ class MainActivity : AppCompatActivity() {
     private val spinSelectedListener = object: OnItemSelectedListener{
         override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
 //            val selectedItem = parent.getItemAtPosition(position).toString()
-            if(position <= 9)
-                selectedTeamID = position+1
-            else if (position <=24)
-                selectedTeamID = position+2
-            else if (position <=27)
-                selectedTeamID = position+3
-            else if (position == 28)
-                selectedTeamID = 52
-            else if (position == 29)
-                selectedTeamID = 53
-            else if (position == 30)
-                selectedTeamID = 54
-            Log.e("POS", ""+selectedTeamID)
+            when {
+                position <= 9 -> selectedTeamID = position+1
+                position <=24 -> selectedTeamID = position+2
+                position <=27 -> selectedTeamID = position+3
+                position == 28 -> selectedTeamID = 52
+                position == 29 -> selectedTeamID = 53
+                position == 30 -> selectedTeamID = 54
+            }
         }
         override fun onNothingSelected(parent: AdapterView<*>) {
 
@@ -197,7 +201,7 @@ class MainActivity : AppCompatActivity() {
 
     }
     private fun getTeams(){
-        var baseURL = "https://statsapi.web.nhl.com/api/v1/teams"
+        val baseURL = "https://statsapi.web.nhl.com/api/v1/teams"
         Log.e("TAG", baseURL)
         val request = Request.Builder().url(baseURL).build()
 
@@ -213,9 +217,17 @@ class MainActivity : AppCompatActivity() {
                 val receivedTeams = gson.fromJson(result, GetTeams::class.java)
 
                 val spinnerList = ArrayList<String>()
+                var saveString = ""
                 for(team in receivedTeams.teams) {
                     spinnerList.add(team.name)
+                    saveString += (team.name + "|")
                 }
+
+                val sharedPrefs = getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+                val editor = sharedPrefs.edit()
+                editor.putString(TEAM_LIST, saveString)
+                editor.putInt(TEAM_LIST_CACHE, 0)
+                editor.apply()
 
                 runOnUiThread {
                     setTeams(spinnerList)
@@ -225,6 +237,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setTeams(spinnerList: ArrayList<String>) {
+        // Create an ArrayAdapter using a simple spinner layout and languages array
         aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, spinnerList)
         // Set layout to use when the list of choices appear
         aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
