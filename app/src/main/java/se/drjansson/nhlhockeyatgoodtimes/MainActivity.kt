@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
-import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,21 +17,28 @@ import okhttp3.*
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity() {
 
     private var client = OkHttpClient()
     private var txt : TextView? = null
-    private var dateFrom : EditText? = null
-    private var dateTo : EditText? = null
-    private var startDate: String = ""
-    private var endDate: String = ""
-    private var selectedTeam: String = ""
+    private var startDate: Date? = null
+    private var endDate: Date? = null
+    private var today: Date? = null
+    private var selectedTeamID: Int = 0
+    private lateinit var aa : ArrayAdapter<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val c = Calendar.getInstance()
+        val y = c.get(Calendar.YEAR)
+        val m = c.get(Calendar.MONTH)
+        val d = c.get(Calendar.DAY_OF_MONTH)
+        today = Date(y,m,d)
 
         populateSpinner()
         initializeUI()
@@ -43,17 +49,19 @@ class MainActivity : AppCompatActivity() {
         spinTeamSelect.onItemSelectedListener = spinSelectedListener
 
         // Create an ArrayAdapter using a simple spinner layout and languages array
-        val aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, list_of_items)
+        aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, list_of_items)
         // Set layout to use when the list of choices appear
         aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         // Set Adapter to Spinner
         spinTeamSelect!!.adapter = aa
+
+        getTeams()
     }
 
     private fun initializeUI() {
         txt = findViewById(R.id.txtNextGame)
         btnMain.setOnClickListener {
-            getJson()
+            getGameInfo()
         }
 
         txtStartDate.inputType = InputType.TYPE_NULL
@@ -62,12 +70,12 @@ class MainActivity : AppCompatActivity() {
         txtEndDate?.setOnClickListener(dateClickListener)
 
         btnClearFrom.setOnClickListener {
-            dateFrom?.setText("")
-            startDate = ""
+            txtStartDate?.setText("")
+            startDate = null
         }
         btnClearTo.setOnClickListener {
-            dateTo?.setText("")
-            endDate = ""
+            txtEndDate?.setText("")
+            endDate = null
         }
 
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -76,23 +84,32 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val dateClickListener = View.OnClickListener { origView ->
-        val c = Calendar.getInstance()
-        val y = c.get(Calendar.YEAR)
-        val m = c.get(Calendar.MONTH)
-        val d = c.get(Calendar.DAY_OF_MONTH)
+        var y:Int; var m:Int; var d:Int
+        if (origView?.id == R.id.txtStartDate && startDate != null) {
+            y= startDate!!.year
+            m= startDate!!.month-1
+            d= startDate!!.day
+
+        }else if (origView?.id == R.id.txtEndDate && endDate != null){
+            y= endDate!!.year
+            m= endDate!!.month-1
+            d= endDate!!.day
+        }else {
+            y= today!!.year
+            m= today!!.month
+            d= today!!.day
+        }
+
 
         val dpd = DatePickerDialog(this, DatePickerDialog.OnDateSetListener { _, year, monthOfYear, day ->
             val month = monthOfYear +1
-            var monthstr = ""
-            if(monthOfYear<10)
-                monthstr = "0"
             // Display Selected date in textbox
             if (origView?.id == R.id.txtStartDate) {
-                startDate = "$year-$monthstr$month-$day"
-                txtStartDate.setText("$day, $month, $year")
+                startDate = Date(year,month,day)
+                txtStartDate.setText(startDate.toString())
             } else if (origView?.id == R.id.txtEndDate) {
-                endDate = "$year-$monthstr$month-$day"
-                txtEndDate.setText("$day, $month, $year")
+                endDate = Date(year,month,day)
+                txtEndDate.setText(endDate.toString())
             }
         },y , m, d)
 
@@ -102,17 +119,29 @@ class MainActivity : AppCompatActivity() {
 
     private val spinSelectedListener = object: OnItemSelectedListener{
         override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-            val selectedItem = parent.getItemAtPosition(position).toString()
-            selectedTeam = selectedItem
+//            val selectedItem = parent.getItemAtPosition(position).toString()
+            if(position <= 9)
+                selectedTeamID = position+1
+            else if (position <=24)
+                selectedTeamID = position+2
+            else if (position <=27)
+                selectedTeamID = position+3
+            else if (position == 28)
+                selectedTeamID = 52
+            else if (position == 29)
+                selectedTeamID = 53
+            else if (position == 30)
+                selectedTeamID = 54
+            Log.e("POS", ""+selectedTeamID)
         }
         override fun onNothingSelected(parent: AdapterView<*>) {
 
         }
     }
 
-    private fun getJson(){
-        var baseURL = "https://statsapi.web.nhl.com/api/v1/schedule?teamId=21"
-        baseURL += "&startDate=$startDate&endDate=$endDate"
+    private fun getGameInfo(){
+        var baseURL = "https://statsapi.web.nhl.com/api/v1/schedule?"
+        baseURL += "teamId="+selectedTeamID+"&startDate="+startDate.toString()+"&endDate="+endDate.toString()
         Log.e("TAG", baseURL)
         val request = Request.Builder().url(baseURL).build()
 
@@ -137,7 +166,7 @@ class MainActivity : AppCompatActivity() {
                 val awayTeam = matches.dates[0].games[0].teams.away.team.name
                 val homeTeam = matches.dates[0].games[0].teams.home.team.name
 
-                val nextGame = "$date $homeTeam-$awayTeam"
+                val nextGame = "$date $homeTeam - $awayTeam"
 
                 for(match in matches.dates){
                     val time:String = match.games[0].gameDate
@@ -167,6 +196,44 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
+    private fun getTeams(){
+        var baseURL = "https://statsapi.web.nhl.com/api/v1/teams"
+        Log.e("TAG", baseURL)
+        val request = Request.Builder().url(baseURL).build()
+
+        client.newCall(request).
+            enqueue(object: Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("TAG", "Could not fetch TEAMS")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val result = response.body!!.string()
+                val gson = GsonBuilder().create()
+                val receivedTeams = gson.fromJson(result, GetTeams::class.java)
+
+                val spinnerList = ArrayList<String>()
+                for(team in receivedTeams.teams) {
+                    spinnerList.add(team.name)
+                }
+
+                runOnUiThread {
+                    setTeams(spinnerList)
+                }
+            }
+        })
+    }
+
+    private fun setTeams(spinnerList: ArrayList<String>) {
+        aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, spinnerList)
+        // Set layout to use when the list of choices appear
+        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // Set Adapter to Spinner
+        spinTeamSelect!!.adapter = aa
+    }
+
+    class GetTeams(val teams: List<Team>)
+    class Team(val name: String)
 
     class Matches(val totalGames: Int, val dates: List<Info>)
     class Info(val date: String, val games: List<Games>)
@@ -174,5 +241,14 @@ class MainActivity : AppCompatActivity() {
     class Teams(val away: Lag, val home: Lag )
     class Lag(val team: Name)
     class Name(val name: String)
+
+    class Date(var year: Int, var month: Int, var day: Int){
+        override fun toString(): String {
+            var monthstr = ""
+            if(month<10)
+                monthstr = "0"
+            return "$year-$monthstr$month-$day"
+        }
+    }
 
 }
