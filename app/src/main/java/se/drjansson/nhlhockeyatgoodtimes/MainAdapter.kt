@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.match_row.view.*
+import java.util.*
 
 class MainAdapter( val matches: MainActivity.Matches) : RecyclerView.Adapter<CustomViewHolder>() {
 
@@ -20,7 +21,10 @@ class MainAdapter( val matches: MainActivity.Matches) : RecyclerView.Adapter<Cus
         val awayTeam = matches.dates[position].games[0].teams.away.team.name
         val homeTeam = matches.dates[position].games[0].teams.home.team.name
         val date = matches.dates[position].date
-        val time = matches.dates[position].games[0].gameDate
+//        val time = matches.dates[position].games[0].gameDate
+        val minute = matches.dates[position].games[0].cal.get(Calendar.MINUTE)
+        val time = "" + matches.dates[position].games[0].cal.get(Calendar.HOUR_OF_DAY) + ":" +
+                if (minute < 10 ) "0"+minute else minute
         holder.view.txtHomeTeam.text = homeTeam
         holder.view.txtAwayTeam.text = awayTeam
         holder.view.txtDate.setText(date)
