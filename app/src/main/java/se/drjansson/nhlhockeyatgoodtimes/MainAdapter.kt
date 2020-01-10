@@ -12,7 +12,7 @@ import java.util.*
 class MainAdapter( val matches: MainActivity.Matches) : RecyclerView.Adapter<CustomViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomViewHolder {
-        val layoutInflater = LayoutInflater.from(parent?.context)
+        val layoutInflater = LayoutInflater.from(parent.context)
         val cellForRow = layoutInflater.inflate(R.layout.match_row, parent, false)
         return CustomViewHolder(cellForRow)
     }
@@ -24,7 +24,7 @@ class MainAdapter( val matches: MainActivity.Matches) : RecyclerView.Adapter<Cus
 //        val time = matches.dates[position].games[0].gameDate
         val minute = matches.dates[position].games[0].cal.get(Calendar.MINUTE)
         val time = "" + matches.dates[position].games[0].cal.get(Calendar.HOUR_OF_DAY) + ":" +
-                if (minute < 10 ) "0"+minute else minute
+                if (minute < 10 ) "0$minute" else minute
         holder.view.txtHomeTeam.text = homeTeam
         holder.view.txtAwayTeam.text = awayTeam
         holder.view.txtDate.setText(date)
@@ -41,6 +41,4 @@ class MainAdapter( val matches: MainActivity.Matches) : RecyclerView.Adapter<Cus
     }
 }
 
-class CustomViewHolder(val view: View): RecyclerView.ViewHolder(view){
-
-}
+class CustomViewHolder(val view: View): RecyclerView.ViewHolder(view)

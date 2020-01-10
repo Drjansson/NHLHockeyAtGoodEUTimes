@@ -2,10 +2,12 @@ package se.drjansson.nhlhockeyatgoodtimes
 
 import android.app.DatePickerDialog
 import android.os.Bundle
-import android.provider.Settings.System.DATE_FORMAT
 import android.text.InputType
 import android.util.Log
 import android.view.View
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemSelectedListener
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private var dateTo : EditText? = null
     private var startDate: String = ""
     private var endDate: String = ""
+    private var selectedTeam: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +39,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun populateSpinner() {
+        var list_of_items = arrayOf("Item 1", "Item 2", "Item 3")
+        spinTeamSelect.onItemSelectedListener = spinSelectedListener
 
+        // Create an ArrayAdapter using a simple spinner layout and languages array
+        val aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, list_of_items)
+        // Set layout to use when the list of choices appear
+        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // Set Adapter to Spinner
+        spinTeamSelect!!.adapter = aa
     }
 
     private fun initializeUI() {
@@ -89,6 +100,15 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private val spinSelectedListener = object: OnItemSelectedListener{
+        override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+            val selectedItem = parent.getItemAtPosition(position).toString()
+            selectedTeam = selectedItem
+        }
+        override fun onNothingSelected(parent: AdapterView<*>) {
+
+        }
+    }
 
     private fun getJson(){
         var baseURL = "https://statsapi.web.nhl.com/api/v1/schedule?teamId=21"
@@ -152,7 +172,7 @@ class MainActivity : AppCompatActivity() {
     class Info(val date: String, val games: List<Games>)
     class Games(val gameDate: String, val teams: Teams, var before10 : Boolean = false, var cal : Calendar)
     class Teams(val away: Lag, val home: Lag )
-    class Lag(val team: Sista)
-    class Sista(val name: String)
+    class Lag(val team: Name)
+    class Name(val name: String)
 
 }
