@@ -25,16 +25,13 @@ class MainAdapter( val matches: MainActivity.Matches) : RecyclerView.Adapter<Cus
         val minute = matches.dates[position].games[0].cal.get(Calendar.MINUTE)
         val time = "" + matches.dates[position].games[0].cal.get(Calendar.HOUR_OF_DAY) + ":" +
                 if (minute < 10 ) "0$minute" else minute
-        holder.view.txtHomeTeam.text = homeTeam
-        holder.view.txtAwayTeam.text = awayTeam
-        holder.view.txtDate.setText(date)
-        holder.view.txtTime.setText(time)
+        holder.view.txtHomeTeam.text = "$homeTeam - $awayTeam"
+        holder.view.txtDate.setText("$date \t $time")
 
         if(matches.dates[position].games[0].before10)
             holder.view.setBackgroundColor(Color.GREEN)
 
         holder.view.txtDate.inputType = InputType.TYPE_NULL
-        holder.view.txtTime.inputType = InputType.TYPE_NULL
     }
     override fun getItemCount(): Int {
         return matches.totalGames
