@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
         if(savedString != null && resetCache < 10) {
             val list_of_items = savedString.split("\\|".toRegex())
-            setTeams(list_of_items as ArrayList<String>)
+            setSpinnerItems(list_of_items as ArrayList<String>)
 
             resetCache++
             val editor = sharedPrefs.edit()
@@ -64,6 +64,27 @@ class MainActivity : AppCompatActivity() {
             editor.apply()
         } else
             getTeams()
+
+    }
+
+    private fun setSpinnerItems(spinnerList: ArrayList<String>) {
+        // Create an ArrayAdapter using a simple spinner layout and languages array
+        aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, spinnerList)
+        // Set layout to use when the list of choices appear
+        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // Set Adapter to Spinner
+        spinTeamSelect!!.adapter = aa
+
+        val compareValue = "Colorado Avalanche"
+        //spinTeamSelect.getPosition(compareValue)
+        var j = 0
+        for (i in 0..spinTeamSelect.count){
+            if(spinTeamSelect.getItemAtPosition(i).toString().equals(compareValue, true)) {
+                j = i
+                break
+            }
+        }
+        spinTeamSelect.setSelection(j)
 
     }
 
@@ -230,20 +251,13 @@ class MainActivity : AppCompatActivity() {
                 editor.apply()
 
                 runOnUiThread {
-                    setTeams(spinnerList)
+                    setSpinnerItems(spinnerList)
                 }
             }
         })
     }
 
-    private fun setTeams(spinnerList: ArrayList<String>) {
-        // Create an ArrayAdapter using a simple spinner layout and languages array
-        aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, spinnerList)
-        // Set layout to use when the list of choices appear
-        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        // Set Adapter to Spinner
-        spinTeamSelect!!.adapter = aa
-    }
+
 
     class GetTeams(val teams: List<Team>)
     class Team(val name: String)
