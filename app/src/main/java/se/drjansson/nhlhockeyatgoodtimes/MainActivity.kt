@@ -58,6 +58,9 @@ class MainActivity : AppCompatActivity() {
             val list_of_items = savedString.split("\\|".toRegex())
             setSpinnerItems(list_of_items as ArrayList<String>)
 
+            //TODO: Make this changeable in the future.
+            setPreChosenTeam("Colorado Avalanche")
+
             resetCache++
             val editor = sharedPrefs.edit()
             editor.putInt(TEAM_LIST_CACHE, resetCache)
@@ -75,17 +78,17 @@ class MainActivity : AppCompatActivity() {
         // Set Adapter to Spinner
         spinTeamSelect!!.adapter = aa
 
-        val compareValue = "Colorado Avalanche"
-        //spinTeamSelect.getPosition(compareValue)
+    }
+
+    private fun setPreChosenTeam(team: String){
         var j = 0
         for (i in 0..spinTeamSelect.count){
-            if(spinTeamSelect.getItemAtPosition(i).toString().equals(compareValue, true)) {
+            if(spinTeamSelect.getItemAtPosition(i).toString().equals(team, true)) {
                 j = i
                 break
             }
         }
         spinTeamSelect.setSelection(j)
-
     }
 
     private fun initializeUI() {
