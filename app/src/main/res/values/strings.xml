@@ -5,4 +5,6 @@
     <string name="btnMain">Fetch Data</string>
     <string name="btnClear">Clear</string>
     <string name="txtNextGame">Next Game:</string>
+    <string name="txtFrom">From</string>
+    <string name="txtTo">To</string>
 </resources>

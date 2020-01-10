@@ -11,23 +11,41 @@
 
     <Spinner
         android:id="@+id/spinTeamSelect"
-        android:layout_width="409dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:text="@string/txtFrom"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@+id/txtStartDate"
+        app:layout_constraintEnd_toStartOf="@+id/txtStartDate"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/txtStartDate" />
 
     <EditText
         android:id="@+id/txtStartDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="24dp"
         android:autofillHints=""
         android:ems="10"
         android:hint="@string/start_date_hint"
         android:inputType="date"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.348"
+        app:layout_constraintHorizontal_bias="0.4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinTeamSelect"
         tools:targetApi="o" />
@@ -38,10 +56,21 @@
         android:layout_height="38dp"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginTop="44dp"
         android:text="@string/btnClear"
+        app:layout_constraintBottom_toBottomOf="@+id/txtStartDate"
         app:layout_constraintStart_toEndOf="@+id/txtStartDate"
-        app:layout_constraintTop_toBottomOf="@+id/spinTeamSelect" />
+        app:layout_constraintTop_toTopOf="@+id/txtStartDate" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/txtTo"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@+id/txtEndDate"
+        app:layout_constraintEnd_toEndOf="@+id/textView2"
+        app:layout_constraintStart_toStartOf="@+id/textView2"
+        app:layout_constraintTop_toTopOf="@+id/txtEndDate" />
 
     <EditText
         android:id="@+id/txtEndDate"
@@ -53,7 +82,7 @@
         android:hint="@string/end_date_hint"
         android:inputType="date"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.348"
+        app:layout_constraintHorizontal_bias="0.4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtStartDate"
         tools:targetApi="o" />
@@ -64,44 +93,45 @@
         android:layout_height="38dp"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginTop="20dp"
         android:text="@string/btnClear"
+        app:layout_constraintBottom_toBottomOf="@+id/txtEndDate"
         app:layout_constraintStart_toEndOf="@+id/txtEndDate"
-        app:layout_constraintTop_toBottomOf="@+id/btnClearFrom" />
-
-    <TextView
-        android:id="@+id/txtNextGame"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/txtNextGame"
-        app:layout_constraintHorizontal_bias="0.443"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtEndDate" />
+        app:layout_constraintTop_toTopOf="@+id/txtEndDate" />
 
     <Button
         android:id="@+id/btnMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="132dp"
-        android:layout_marginLeft="132dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:text="@string/btnMain"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtNextGame" />
+        app:layout_constraintTop_toBottomOf="@+id/txtEndDate" />
+
+    <TextView
+        android:id="@+id/txtNextGame"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginRight="16dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="@string/txtNextGame"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnMain" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="298dp"
-        android:layout_marginTop="28dp"
-        android:layout_marginBottom="10dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnMain"
-        app:layout_constraintVertical_bias="0.011" />
+        app:layout_constraintTop_toBottomOf="@+id/txtNextGame" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
