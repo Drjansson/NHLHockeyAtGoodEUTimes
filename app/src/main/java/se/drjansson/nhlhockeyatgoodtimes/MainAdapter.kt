@@ -20,8 +20,11 @@ class MainAdapter( val matches: MainActivity.Matches) : RecyclerView.Adapter<Cus
     override fun onBindViewHolder(holder: CustomViewHolder, position: Int) {
         val awayTeam = matches.dates[position].games[0].teams.away.team.name
         val homeTeam = matches.dates[position].games[0].teams.home.team.name
-        val date = matches.dates[position].date
+        //val date = matches.dates[position].date
 //        val time = matches.dates[position].games[0].gameDate
+        val date = "" + matches.dates[position].games[0].cal.get(Calendar.YEAR) + "-"+
+                "" + (matches.dates[position].games[0].cal.get(Calendar.MONTH)+1) + "-" +
+                "" + matches.dates[position].games[0].cal.get(Calendar.DAY_OF_MONTH)
         val minute = matches.dates[position].games[0].cal.get(Calendar.MINUTE)
         val time = "" + matches.dates[position].games[0].cal.get(Calendar.HOUR_OF_DAY) + ":" +
                 if (minute < 10 ) "0$minute" else minute
