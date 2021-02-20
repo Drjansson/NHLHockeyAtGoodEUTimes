@@ -16,6 +16,7 @@ import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.*
 import java.io.IOException
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -26,12 +27,13 @@ class MainActivity : AppCompatActivity() {
     private val TEAM_LIST = "team_list"
     private val TEAM_LIST_CACHE = "team_list_cache"
     private var client = OkHttpClient()
-    private var txt : TextView? = null
+    private val gson = GsonBuilder().create()
+    private var txt: TextView? = null
     private var startDate: Date? = null
     private var endDate: Date? = null
     private var today: Date? = null
     private var selectedTeamID: Int = 0
-    private lateinit var aa : ArrayAdapter<String>
+    private lateinit var aa: ArrayAdapter<Team>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,8 +57,14 @@ class MainActivity : AppCompatActivity() {
         spinTeamSelect.onItemSelectedListener = spinSelectedListener
 
         if(savedString != null && resetCache < 10) {
-            val list_of_items = savedString.split("\\|".toRegex())
-            setSpinnerItems(list_of_items as ArrayList<String>)
+            val listOfTeams: GetTeams
+            try {
+                listOfTeams = gson.fromJson(savedString, GetTeams::class.java)
+            } catch (e : Exception){
+                getTeams()
+                return
+            }
+            setSpinnerItems(listOfTeams.teams)
 
             //TODO: Make this changeable in the future.
             setPreChosenTeam("Colorado Avalanche")
@@ -70,7 +78,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun setSpinnerItems(spinnerList: ArrayList<String>) {
+    private fun setSpinnerItems(spinnerList: List<Team>) {
         // Create an ArrayAdapter using a simple spinner layout and languages array
         aa = ArrayAdapter(this, android.R.layout.simple_spinner_item, spinnerList)
         // Set layout to use when the list of choices appear
@@ -112,8 +120,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         recyclerView.layoutManager = LinearLayoutManager(this)
-        //recyclerView.adapter = MainAdapter()
-
     }
 
     private val dateClickListener = View.OnClickListener { origView ->
@@ -152,15 +158,7 @@ class MainActivity : AppCompatActivity() {
 
     private val spinSelectedListener = object: OnItemSelectedListener{
         override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-//            val selectedItem = parent.getItemAtPosition(position).toString()
-            when {
-                position <= 9 -> selectedTeamID = position+1
-                position <=24 -> selectedTeamID = position+2
-                position <=27 -> selectedTeamID = position+3
-                position == 28 -> selectedTeamID = 52
-                position == 29 -> selectedTeamID = 53
-                position == 30 -> selectedTeamID = 54
-            }
+            selectedTeamID = aa.getItem(position)?.id ?: 0
         }
         override fun onNothingSelected(parent: AdapterView<*>) {
 
@@ -210,8 +208,10 @@ class MainActivity : AppCompatActivity() {
                     Log.e("TAG", "Tim " +match.games[0].cal.get(Calendar.HOUR_OF_DAY)  )
                     Log.e("TAG", "Min " +match.games[0].cal.get(Calendar.MINUTE)  )*/
                     val start = match.games[0].cal.get(Calendar.HOUR_OF_DAY)
-                    if(start in 11..22)
-                        match.games[0].before10 = true
+                    val earliestStartTime = 11
+                    val latestStartTime = 22
+                    if(start in earliestStartTime..latestStartTime)
+                        match.games[0].earlyStartTime = true
                 }
 
                 runOnUiThread {
@@ -224,10 +224,12 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
-    private fun getTeams(){
+    private fun getTeams() : List<Team>{
         val baseURL = "https://statsapi.web.nhl.com/api/v1/teams"
         Log.e("TAG", baseURL)
         val request = Request.Builder().url(baseURL).build()
+
+        var receivedTeams: List<Team> = ArrayList()
 
         client.newCall(request).
             enqueue(object: Callback {
@@ -238,36 +240,36 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(call: Call, response: Response) {
                 val result = response.body!!.string()
                 val gson = GsonBuilder().create()
-                val receivedTeams = gson.fromJson(result, GetTeams::class.java)
-
-                val spinnerList = ArrayList<String>()
-                var saveString = ""
-                for(team in receivedTeams.teams) {
-                    spinnerList.add(team.name)
-                    saveString += (team.name + "|")
-                }
+                val teams = gson.fromJson(result, GetTeams::class.java)
+                receivedTeams = teams.teams
 
                 val sharedPrefs = getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
                 val editor = sharedPrefs.edit()
-                editor.putString(TEAM_LIST, saveString)
+                editor.putString(TEAM_LIST, gson.toJson(receivedTeams))
                 editor.putInt(TEAM_LIST_CACHE, 0)
                 editor.apply()
 
                 runOnUiThread {
-                    setSpinnerItems(spinnerList)
+                    setSpinnerItems(receivedTeams)
                 }
             }
         })
+        return receivedTeams
     }
 
 
 
+
     class GetTeams(val teams: List<Team>)
-    class Team(val name: String)
+    class Team(val name: String, val id: Int){
+        override fun toString(): String {
+            return name
+        }
+    }
 
     class Matches(val totalGames: Int, val dates: List<Info>)
     class Info(val date: String, val games: List<Games>)
-    class Games(val gameDate: String, val teams: Teams, var before10 : Boolean = false, var cal : Calendar)
+    class Games(val gameDate: String, val teams: Teams, var earlyStartTime : Boolean = false, var cal : Calendar)
     class Teams(val away: Lag, val home: Lag )
     class Lag(val team: Name)
     class Name(val name: String)
